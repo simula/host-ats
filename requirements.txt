@@ -1,0 +1,9 @@
+cmake==3.22.3
+dlib==19.23.1
+image-quality==1.2.7
+mtcnn==0.1.1
+numpy==1.22.3
+opencv-python==4.5.5.64
+pillow==9.0.1
+scikit-image==0.18.3
+tensorflow-cpu==2.8.0
