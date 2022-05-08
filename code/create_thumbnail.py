@@ -50,8 +50,8 @@ def main():
     downscaleOnProcessing = 0.5
     downscaleOutput = 1.0
     annotationSecond = None
-    beforeAnnotationSecondsCut = None
-    afterAnnotationSecondsCut = None
+    beforeAnnotationSecondsCut = 10
+    afterAnnotationSecondsCut = 40
     staticThumbnailSec = None
     logo_model_name = eliteserienStr
     logo_detection_model = ""
@@ -60,8 +60,8 @@ def main():
     close_up_model = ""
     iqa_model_name = ocampoStr
     brisque_threshold = 35
-    blur_model_name = svdStr
-    svd_threshold = 0.65
+    blur_model_name = laplacianStr
+    svd_threshold = 0.60
     laplacian_threshold = 1000
     filename_output = ""
 
