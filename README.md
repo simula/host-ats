@@ -229,3 +229,7 @@ If a complete folder is specified as input, the pipeline iterates through all vi
 # Huldra
 
 The user study survey framework Huldra is accessible on GitHub: https://github.com/simula/huldra 
+
+# Code Ocean Capsule
+
+A reproducible Code Ocean capsule is runnable at this link: https://doi.org/10.24433/CO.2648317.v1 
