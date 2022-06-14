@@ -225,3 +225,7 @@ A future fix in the [`image-quality` package](https://pypi.org/project/image-qua
 Running the pipeline by calling `create_thumbnail.py` outputs one image file (`jpg`) per input video clip, into the folder `results/`. 
 This is the thumbnail selected for the particular video clip. 
 If a complete folder is specified as input, the pipeline iterates through all video files in the folder, and outputs one image per video file. 
+
+# Huldra
+
+The user study survey framework Huldra is accessible on GitHub: https://github.com/simula/huldra 
