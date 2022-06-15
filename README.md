@@ -232,4 +232,9 @@ The user study survey framework Huldra is accessible on GitHub: https://github.c
 
 # Code Ocean Capsule
 
-A reproducible Code Ocean capsule is runnable at this link: https://doi.org/10.24433/CO.2648317.v1 
+A reproducible Code Ocean capsule is runnable at this link: https://doi.org/10.24433/CO.2648317.v1
+
+# Dashboard Demonstration Videos
+
+The dashboard with a graphical user interface is available at YouTube: https://www.youtube.com/watch?v=HHMCdMucorI and https://www.youtube.com/watch?v=VZQaEy2VauQ
+
