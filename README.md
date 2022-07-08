@@ -226,15 +226,36 @@ Running the pipeline by calling `create_thumbnail.py` outputs one image file (`j
 This is the thumbnail selected for the particular video clip. 
 If a complete folder is specified as input, the pipeline iterates through all video files in the folder, and outputs one image per video file. 
 
-# Huldra
+# HOST-ATS User Survey
 
-The user study survey framework Huldra is accessible on GitHub: https://github.com/simula/huldra 
+The HOST-ATS user survey can be found here: https://host-ats.herokuapp.com 
 
-# Code Ocean Capsule
+The survey uses a customized version of the _Huldra_ framework: https://github.com/simula/huldra 
 
-A reproducible Code Ocean capsule is runnable at this link: https://doi.org/10.24433/CO.2648317.v1
+# HOST-ATS Code Ocean Capsule
 
-# Dashboard Demonstration Videos
+A reproducible Code Ocean capsule for HOST-ATS can be found here: https://doi.org/10.24433/CO.2648317.v1
 
-The dashboard with a graphical user interface is available at YouTube: https://www.youtube.com/watch?v=HHMCdMucorI and https://www.youtube.com/watch?v=VZQaEy2VauQ
+# HOST-ATS Dashboard
+
+The HOST-ATS dashboard with a graphical user interface (GUI) can be used to run the ML pipeline, as an alternative to command line execution.
+
+```
+sudo apt-get python3-tk
+python3 ats_interface.py
+```
+
+## Demonstration Videos
+
+Demonstration videos for the HOST-ATS dashboard are available on YouTube: 
+- https://www.youtube.com/watch?v=HHMCdMucorI 
+- https://www.youtube.com/watch?v=VZQaEy2VauQ
+
+# References
+
+- Andreas Husa, Cise Midoglu, Malek Hammou, Steven A. Hicks, Dag Johansen, Tomas Kupka, Michael A. Riegler, Pål Halvorsen. _Automatic Thumbnail Selection for Soccer Videos using Machine Learning_. MMSys 2022. DOI: [10.1145/3524273.3528182](https://doi.org/10.1145/3524273.3528182).
+
+- Malek Hammou, Cise Midoglu, Steven A. Hicks, Andrea Storås, Saeed Shafiee Sabet, Inga Strümke, Michael A. Riegler, Pål Halvorsen. _Huldra: A Framework for Collecting Crowdsourced Feedback on Multimedia Assets_. MMSys 2022. DOI: [10.1145/3524273.3532887](https://doi.org/10.1145/3524273.3532887).
+
+- Andreas Husa, Cise Midoglu, Malek Hammou, Pål Halvorsen, Michael A. Riegler. _HOST-ATS: Automatic Thumbnail Selection with Dashboard-Controlled ML Pipeline and Dynamic User Survey_. MMSys 2022. DOI: [10.1145/3524273.3532908](https://doi.org/10.1145/3524273.3532908).
 
