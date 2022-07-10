@@ -56,10 +56,10 @@ def generate():
 
 		runBlurStr = "-xb" if not runBlurVar.get() else blurStr
 
-		runStatic = "python create_thumbnail.py %s -st 4\n" % (filePath)
+		runStatic = "python3 create_thumbnail.py %s -st 4\n" % (filePath)
 		if os.system(runStatic) != 0:
 			raise Exception('runStatic did not work')
-		runMLbased = 'python create_thumbnail.py %s %s %s %s %s %s %s %s %s %s %s %s\n' % (filePath, annotationStr, csStr, ceStr, downsamplingStr, internalProcessingStr, outputImageStr, runLogoStr, runCloseup, runFaceStr, runIQAStr, runBlurStr)
+		runMLbased = 'python3 create_thumbnail.py %s %s %s %s %s %s %s %s %s %s %s %s\n' % (filePath, annotationStr, csStr, ceStr, downsamplingStr, internalProcessingStr, outputImageStr, runLogoStr, runCloseup, runFaceStr, runIQAStr, runBlurStr)
 		print(runMLbased)
 		if os.system(runMLbased) != 0:
 			raise Exception('runMLbased did not work')

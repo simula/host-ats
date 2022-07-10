@@ -1,3 +1,4 @@
+#Imports
 import cv2
 import os
 import math
@@ -10,11 +11,13 @@ import shutil
 import imquality.brisque as brisque
 import dlib
 from mtcnn.mtcnn import MTCNN
+import time
 
+#Paths
 model_folder = "../data/models/"
 frames_folder_outer = "../results/temp"
 thumbnail_output = "../results/"
-
+#Models
 haarXml = model_folder + "haarcascade_frontalface_default.xml"
 modelFile =  model_folder + "res10_300x300_ssd_iter_140000.caffemodel"
 configFile = model_folder + "deploy.prototxt.txt"
@@ -246,6 +249,7 @@ def main():
 
 
 def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_up_model, logo_detection_model, faceDetModel, runFaceDetection, runBlur, blur_model_name, svd_threshold, laplacian_threshold, runIQA, iqa_model_name, runLogoDetection, runCloseUpDetection, close_up_threshold, brisque_threshold, logo_threshold, cutStartSeconds, cutEndSeconds, totalFramesToExtract, fpsExtract, framerateExtract, annotationSecond, beforeAnnotationSecondsCut, afterAnnotationSecondsCut, filename_output):
+    st = time.time()
     video_filename = video_path.split("/")[-1]
     #frames_folder_outer = os.path.dirname(os.path.abspath(__file__)) + "/extractedFrames/"
     frames_folder = frames_folder_outer + "/frames/"
@@ -315,6 +319,9 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
             numFramesExtracted += 1
 
         currentframe += 1
+        
+    et = time.time()
+    print("Frame extraction time: ",et-st)
     priority_images = groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetModel, runFaceDetection, runLogoDetection, runCloseUpDetection, close_up_threshold, logo_threshold)
     finalThumbnail = ""
 
