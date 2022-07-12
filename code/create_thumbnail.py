@@ -279,13 +279,13 @@ def main():
         data=[platform.system(),
               datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
               totalFramesToExtract,
-              "{0:.3f}".format(frame_extraction),
-              "{0:.3f}".format(models_loading),
-              "{0:.3f}".format(logo_detection),
-              "{0:.3f}".format(closeup_detection),
-              "{0:.3f}".format(face_detection),
-              "{0:.3f}".format(blur_detection),
-              "{0:.3f}".format(iq_predicition),
+              "{0:.3f}".format(frame_extraction) if frame_extraction>0 else "disabled",
+              "{0:.3f}".format(models_loading) if models_loading>0 else "disabled",
+              f'{logo_model_name} '+"{0:.3f}".format(logo_detection)if logo_detection>0 else "disabled",
+              f'{close_up_model_name} '+"{0:.3f}".format(closeup_detection)if closeup_detection>0 else "disabled",
+              f'{faceDetModel} '+"{0:.3f}".format(face_detection)if face_detection>0 else "disabled",
+              f'{blur_model_name} '+"{0:.3f}".format(blur_detection)if blur_detection>0 else "disabled",
+              f'{iqa_model_name} '+"{0:.3f}".format(iq_predicition)if iq_predicition>0 else "disabled",
               "{0:.3f}".format(total)]
         writer.writerow(data)
     logMetrics("../results","performance_metrics")
@@ -529,7 +529,6 @@ def groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetMode
                 priority_images[2][image_path] = probability
         closeUpDetectionEnds=time.time()
         if runCloseUpDetection:
-            print("OKAAAAAAAAAAAAAAAAAY")
             global closeup_detection
             closeup_detection=closeUpDetectionEnds-closeUpDetectionStarts
         if runFaceDetection:
