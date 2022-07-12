@@ -12,6 +12,9 @@ import imquality.brisque as brisque
 import dlib
 from mtcnn.mtcnn import MTCNN
 import time
+import platform
+import csv
+from datetime import datetime
 
 #Paths
 model_folder = "../data/models/"
@@ -40,7 +43,15 @@ filename_additional = "thumbnail"
 #The probability score the image classifying model gives, is depending on which class it is basing the score on.
 #It could be switched
 close_up_model_inverted = False
-
+#Execution time
+frame_extraction=0
+models_loading=0
+logo_detection=0
+closeup_detection=0
+face_detection=0
+blur_detection=0
+iq_predicition=0
+total=0
 def main():
     #Default values
     close_up_threshold = 0.75
@@ -67,8 +78,7 @@ def main():
     svd_threshold = 0.60
     laplacian_threshold = 1000
     filename_output = ""
-
-
+    
     parser = argparse.ArgumentParser(description="Thumbnail generator")
     parser.add_argument("destination", nargs=1, help="Destination of the input to be processed. Can be file or folder.")
 
@@ -227,7 +237,7 @@ def main():
     if staticThumbnailSec:
         get_static(destination, staticThumbnailSec, downscaleOutput, thumbnail_output)
         return
-
+    loadingModelsStarts=time.time()
     if close_up_model_name == surmaStr:
         close_up_model = keras.models.load_model(surma_closeup_model)
 
@@ -235,21 +245,53 @@ def main():
         logo_detection_model = keras.models.load_model(eliteserien_logo_model)
     elif logo_model_name == soccernetStr:
         logo_detection_model = keras.models.load_model(soccernet_logo_model)
+    loadingModelsEnds=time.time()
+    models_loading=loadingModelsEnds-loadingModelsStarts
 
     if processFile:
-        name, ext = os.path.splitext(destination)
         create_thumbnail(name + ext, downscaleOutput, downscaleOnProcessing, close_up_model, logo_detection_model, faceDetModel, runFaceDetection, runBlur, blur_model_name, svd_threshold, laplacian_threshold, runIQA, iqa_model_name, runLogoDetection, runCloseUpDetection, close_up_threshold, brisque_threshold, logo_threshold, cutStartSeconds, cutEndSeconds, totalFramesToExtract, fpsExtract, framerateExtract, annotationSecond, beforeAnnotationSecondsCut, afterAnnotationSecondsCut, filename_output)
+        
     elif processFolder:
         for f in os.listdir(destination):
             name, ext = os.path.splitext(f)
             if ext == ".ts" or ext == ".mp4" or ext == ".mkv":
                 create_thumbnail(destination + name + ext, downscaleOutput , downscaleOnProcessing, close_up_model, logo_detection_model, faceDetModel, runFaceDetection, runBlur, blur_model_name, svd_threshold, laplacian_threshold, runIQA, iqa_model_name, runLogoDetection, runCloseUpDetection, close_up_threshold, brisque_threshold, logo_threshold, cutStartSeconds, cutEndSeconds, totalFramesToExtract, fpsExtract, framerateExtract, annotationSecond, beforeAnnotationSecondsCut, afterAnnotationSecondsCut, filename_output)
 
-
-
+    def logMetrics(directory,fileName):
+     completeName = os.path.join(directory,fileName)
+     header=['platform',
+             'date_time',
+             'nfe',
+             'frame_extraction',
+             'models_loading',
+             'logo_detection',
+             'closeup_detection',
+             'face_detection',
+             'blur_detection',
+             'iq_predicition',
+             'total']
+     with open (completeName+".csv",'a+' ) as file:
+        writer = csv.writer(file)
+        if os.stat(completeName+".csv").st_size == 0:
+            writer.writerow(header)
+        #data to be written
+        total=frame_extraction+models_loading+logo_detection+closeup_detection+face_detection+blur_detection+iq_predicition
+        data=[platform.system(),
+              datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+              totalFramesToExtract,
+              "{0:.3f}".format(frame_extraction),
+              "{0:.3f}".format(models_loading),
+              "{0:.3f}".format(logo_detection),
+              "{0:.3f}".format(closeup_detection),
+              "{0:.3f}".format(face_detection),
+              "{0:.3f}".format(blur_detection),
+              "{0:.3f}".format(iq_predicition),
+              "{0:.3f}".format(total)]
+        writer.writerow(data)
+    logMetrics("../results","performance_metrics")
 
 def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_up_model, logo_detection_model, faceDetModel, runFaceDetection, runBlur, blur_model_name, svd_threshold, laplacian_threshold, runIQA, iqa_model_name, runLogoDetection, runCloseUpDetection, close_up_threshold, brisque_threshold, logo_threshold, cutStartSeconds, cutEndSeconds, totalFramesToExtract, fpsExtract, framerateExtract, annotationSecond, beforeAnnotationSecondsCut, afterAnnotationSecondsCut, filename_output):
-    st = time.time()
+    frameExtractionStarts=time.time()
     video_filename = video_path.split("/")[-1]
     #frames_folder_outer = os.path.dirname(os.path.abspath(__file__)) + "/extractedFrames/"
     frames_folder = frames_folder_outer + "/frames/"
@@ -319,9 +361,9 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
             numFramesExtracted += 1
 
         currentframe += 1
+    frameExtractionEnds=time.time()
+
         
-    et = time.time()
-    print("Frame extraction time: ",et-st)
     priority_images = groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetModel, runFaceDetection, runLogoDetection, runCloseUpDetection, close_up_threshold, logo_threshold)
     finalThumbnail = ""
 
@@ -332,6 +374,7 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
 
         blur_filtered = []
         if runBlur:
+            blurDetectionStarts=time.time()
             if blur_model_name == svdStr:
                 for image in priority:
                     blur_score = estimate_blur_svd(image)
@@ -342,6 +385,11 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
                     blur_score = estimate_blur_laplacian(image)
                     if blur_score > laplacian_threshold:
                         blur_filtered.append(image)
+            blurDetectionEnds=time.time()
+            if runBlur:
+                global blur_detection
+                blur_detection=blurDetectionEnds-blurDetectionStarts
+
 
         else:
             for image in priority:
@@ -349,6 +397,7 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
 
 
         if runIQA:
+            IQAStarts=time.time()
             if iqa_model_name == ocampoStr:
                 bestScore = 0
                 for image in blur_filtered:
@@ -362,6 +411,11 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
                     if score < bestScore:
                         bestScore = score
                         finalThumbnail = image
+            IQAEnds=time.time()
+            if runIQA:
+                global iq_predicition
+                iq_predicition=IQAEnds-IQAStarts
+
         else:
             for image in blur_filtered:
                 finalThumbnail = image
@@ -407,7 +461,10 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
             shutil.rmtree(frames_folder)
         except OSError as e:
             print("Error: %s - %s." % (e.filename, e.strerror))
+    global frame_extraction
+    frame_extraction=frameExtractionEnds-frameExtractionStarts
     print("Done")
+    #Metrics logging function
     return
 
 def groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetModel, runFaceDetection, runLogoDetection, runCloseUpDetection, close_up_threshold, logo_threshold):
@@ -427,6 +484,7 @@ def groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetMode
 
     logos = []
     if runLogoDetection:
+        logoDetectionStarts=time.time()
 
         logo_probabilities = logo_detection_model.predict(test_generator, TEST_SIZE)
 
@@ -434,9 +492,14 @@ def groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetMode
             image_path = frames_folder + test_generator.filenames[index].split("/")[-1]
             if probability > logo_threshold:
                 logos.append(image_path)
-
+        logoDetectionEnds=time.time()
+        if runLogoDetection:
+             global logo_detection
+             logo_detection=logoDetectionEnds-logoDetectionStarts
     priority_images = [{} for x in range(4)]
     if runCloseUpDetection:
+        faceDetection=[]
+        closeUpDetectionStarts=time.time()
         probabilities = close_up_model.predict(test_generator, TEST_SIZE)
 
         for index, probability in enumerate(probabilities):
@@ -451,15 +514,28 @@ def groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetMode
 
             elif probability > close_up_threshold:
                 if runFaceDetection:
+                    faceDetectionStarts=time.time()
                     face_size = detect_faces(image_path, faceDetModel)
                     if face_size > 0:
                         priority_images[0][image_path] = face_size
                     else:
                         priority_images[1][image_path] = probability
+                    faceDetectionEnds=time.time()
+
+
                 else:
                     priority_images[1][image_path] = probability
             else:
                 priority_images[2][image_path] = probability
+        closeUpDetectionEnds=time.time()
+        if runCloseUpDetection:
+            print("OKAAAAAAAAAAAAAAAAAY")
+            global closeup_detection
+            closeup_detection=closeUpDetectionEnds-closeUpDetectionStarts
+        if runFaceDetection:
+            global face_detection
+            face_detection=faceDetectionEnds-faceDetectionStarts
+
     else:
         probability = 1
         for image in os.listdir(frames_folder):
@@ -588,7 +664,6 @@ def detect_faces(image, faceDetModel):
 
     else:
         print("No face detection model in use")
-
     return biggestFace
 
 def restricted_float(x):
