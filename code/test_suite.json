@@ -1,0 +1,18 @@
+[
+    {
+      "nfe":900,
+      "frame_extraction_step":250,
+      "runMlDefault":false,
+      "runStatic":false,
+      "args":["-CSurma","-IQAOcampo","-dlib"]
+    
+  },
+  {
+    "nfe":300,
+    "frame_extraction_step":50,
+    "runMlDefault":true,
+    "runStatic":false,
+    "args":["-CSurma","-IQAOcampo","-dlib"]
+  
+}
+]
