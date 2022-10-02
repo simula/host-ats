@@ -15,7 +15,9 @@ import time
 import platform
 import csv
 from datetime import datetime
-
+import psutil
+import tensorflow as tf
+import sys
 #Paths
 model_folder = "../data/models/"
 frames_folder_outer = "../results/temp"
@@ -52,6 +54,8 @@ face_detection=0
 blur_detection=0
 iq_predicition=0
 total=0
+#frames extracted
+numFramesExtracted=0
 def main():
     #Default values
     close_up_threshold = 0.75
@@ -81,6 +85,7 @@ def main():
     
     parser = argparse.ArgumentParser(description="Thumbnail generator")
     parser.add_argument("destination", nargs=1, help="Destination of the input to be processed. Can be file or folder.")
+    parser.add_argument('-iter','--iteration', type=int, required=False,help='Number of executions per configuration')
 
     #Logo detection models
     logoGroup = parser.add_mutually_exclusive_group(required=False)
@@ -134,6 +139,7 @@ def main():
     parser.add_argument("-fn", "--outputFilename", type=str, default=[filename_output], nargs=1, help="Filename for the output thumbnail instead of default.")
 
     args = parser.parse_args()
+    iteration=args.iteration
     destination = args.destination[0]
     staticThumbnailSec = args.staticThumbnailSec[0]
     filename_output = args.outputFilename[0]
@@ -259,34 +265,75 @@ def main():
 
     def logMetrics(directory,fileName):
      completeName = os.path.join(directory,fileName)
-     header=['platform',
+     header=[#platform details
+             'platform',
              'date_time',
-             'nfe',
-             'frame_extraction',
-             'models_loading',
-             'logo_detection',
-             'closeup_detection',
-             'face_detection',
-             'blur_detection',
-             'iq_predicition',
-             'total']
+             'cpu_logical',
+             'cpu_physical',
+             'cpu_max_freq(Mhz)',
+             'total_ram(GB)',
+             'available_ram(GB)',
+             'gpu_acceleration',
+             #command line arguments
+             'args',
+             'framesToExtract',
+             'downscaleOnProcessing',
+             'logo_detection_model',
+             'closeup_detection_model',
+             'face_detection_model',
+             'blur_detection_model',
+             'iq_prediction_model',
+             #execution time
+             'frame_extraction_time',
+             'logo_detection_time',
+             'closeup_detection_time',
+             'face_detection_time',
+             'blur_detection_time',
+             'iq_prediction_time',
+             'models_loading_time',
+             'total_execution_time',
+             #sanity check
+             'frames_extracted',
+             'iteration'
+             ]
      with open (completeName+".csv",'a+' ) as file:
         writer = csv.writer(file)
         if os.stat(completeName+".csv").st_size == 0:
             writer.writerow(header)
         #data to be written
         total=frame_extraction+models_loading+logo_detection+closeup_detection+face_detection+blur_detection+iq_predicition
-        data=[platform.system(),
+        data=[
+              #platform details
+              platform.system(),
               datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+              psutil.cpu_count(logical=True),
+              psutil.cpu_count(logical=False),
+              psutil.cpu_freq().max,
+              "{0:.2f}".format(psutil.virtual_memory().total/1000000000),
+              "{0:.2f}".format(psutil.virtual_memory().available/1000000000),
+              tf.test.gpu_device_name() if tf.test.gpu_device_name() else "disabled",
+              #command line arguments
+              "".join(sys.argv[1:]).split("-"),
               totalFramesToExtract,
+              downscaleOnProcessing,
+              logo_model_name,
+              close_up_model_name,
+              faceDetModel,
+              blur_model_name,
+              iqa_model_name,
+              #execution time
               "{0:.3f}".format(frame_extraction) if frame_extraction>0 else "disabled",
+              "{0:.3f}".format(logo_detection)if logo_detection>0 else "disabled",
+              "{0:.3f}".format(closeup_detection)if closeup_detection>0 else "disabled",
+              "{0:.3f}".format(face_detection)if face_detection>0 else "disabled",
+              "{0:.3f}".format(blur_detection)if blur_detection>0 else "disabled",
+              "{0:.3f}".format(iq_predicition)if iq_predicition>0 else "disabled",
               "{0:.3f}".format(models_loading) if models_loading>0 else "disabled",
-              f'{logo_model_name} '+"{0:.3f}".format(logo_detection)if logo_detection>0 else "disabled",
-              f'{close_up_model_name} '+"{0:.3f}".format(closeup_detection)if closeup_detection>0 else "disabled",
-              f'{faceDetModel} '+"{0:.3f}".format(face_detection)if face_detection>0 else "disabled",
-              f'{blur_model_name} '+"{0:.3f}".format(blur_detection)if blur_detection>0 else "disabled",
-              f'{iqa_model_name} '+"{0:.3f}".format(iq_predicition)if iq_predicition>0 else "disabled",
-              "{0:.3f}".format(total)]
+              "{0:.3f}".format(total),
+              #sanity check
+              numFramesExtracted,
+              iteration
+              ]
         writer.writerow(data)
     logMetrics("../results","performance_metrics")
 
@@ -337,6 +384,7 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
     currentframe = 0
     # frames to skip
     frame_skip = (totalFrames-(cutStartFrames + cutEndFrames))//totalFramesToExtract
+    global numFramesExtracted
     numFramesExtracted = 0
     stopFrame = totalFrames-cutEndFrames
     while(True):
@@ -429,6 +477,10 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
                 break
 
     if finalThumbnail != "":
+        outputFolder=thumbnail_output+"/"+video_filename
+        if not os.path.exists(outputFolder):
+             os.mkdir(outputFolder)
+
         newName = ""
         if filename_output == "":
             newName = video_filename.split(".")[0] + "_" + filename_additional +  ".jpg"
@@ -440,6 +492,7 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
             
         imageName = finalThumbnail.split("/")[-1].split(".")[0]
         frameNum = int(imageName.replace("frame", ""))
+        newName=newName.split(".")[0]+f'_{len(os.listdir(outputFolder))+1}'+'.'+newName.split(".")[-1]
 
         cam.set(1, frameNum)
         ret, frame = cam.read()
@@ -448,8 +501,7 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
             height = int(frame.shape[0] * downscaleOutput)
             dsize = (width, height)
             frame = cv2.resize(frame, dsize)
-
-        cv2.imwrite(thumbnail_output + newName, frame)
+        cv2.imwrite(os.path.join(outputFolder , newName), frame)
         print("Thumbnail created. Filename: " + newName)
         # Release all space and windows once done
         cam.release()
@@ -464,12 +516,16 @@ def create_thumbnail(video_path, downscaleOutput, downscaleOnProcessing, close_u
     global frame_extraction
     frame_extraction=frameExtractionEnds-frameExtractionStarts
     print("Done")
+
+
     #Metrics logging function
     return
 
 def groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetModel, runFaceDetection, runLogoDetection, runCloseUpDetection, close_up_threshold, logo_threshold):
     test_generator = None
     TEST_SIZE = 0
+    faceDetectionStarts=0
+    faceDetectionEnds=0
     if runCloseUpDetection or runLogoDetection:
         test_data_generator = ImageDataGenerator(rescale=1./255)
         IMAGE_SIZE = 200
@@ -498,7 +554,6 @@ def groupFrames(frames_folder, close_up_model, logo_detection_model, faceDetMode
              logo_detection=logoDetectionEnds-logoDetectionStarts
     priority_images = [{} for x in range(4)]
     if runCloseUpDetection:
-        faceDetection=[]
         closeUpDetectionStarts=time.time()
         probabilities = close_up_model.predict(test_generator, TEST_SIZE)
 

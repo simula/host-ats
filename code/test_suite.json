@@ -1,18 +1,21 @@
 [
-    {
-      "nfe":900,
-      "frame_extraction_step":250,
-      "runMlDefault":false,
-      "runStatic":false,
-      "args":["-CSurma","-IQAOcampo","-dlib"]
-    
-  },
   {
-    "nfe":300,
-    "frame_extraction_step":50,
-    "runMlDefault":true,
+    "runMlDefault":false,
     "runStatic":false,
-    "args":["-CSurma","-IQAOcampo","-dlib"]
-  
+    "args":[],
+    "downSampling":{
+      "numberOfFramesPerSecond":[8, 5, 7, 23, 15, 3, 6]
+    },
+    "downScaling":{
+      "downscaleOnProcessing":[0.5],
+      "downScalePostProcessing":[1.0]
+    },
+    "annotation":{
+      "annotationSecond":[10],
+      "cutBeforeAnnotation":[2],
+      "cutAfterAnnotation":[7]
+    },
+    "iterate":1
 }
+
 ]
