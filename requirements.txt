@@ -8,3 +8,4 @@ pillow
 scikit-image
 tensorflow-cpu
 psutil
+brisque

@@ -18,6 +18,8 @@ from datetime import datetime
 import psutil
 import tensorflow as tf
 import sys
+from brisque import BRISQUE
+
 #Paths
 model_folder = "../data/models/"
 frames_folder_outer = "../results/temp"
@@ -644,9 +646,8 @@ def get_static(video_path, secondExtract, downscaleOutput, outputFolder):
 
 
 def predictBrisque(image_path):
-    img = cv2.imread(image_path)
-    brisqueScore = brisque.score(img)
-
+    img = BRISQUE(image_path ,url=False)
+    brisqueScore = img.score()
     return brisqueScore
 
 def estimate_blur_svd(image_file, sv_num=10):
